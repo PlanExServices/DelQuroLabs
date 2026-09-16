@@ -1,0 +1,33 @@
+# Keep the build context small and the image reproducible.
+
+# dependencies are installed inside the image from the lockfile
+node_modules
+**/node_modules
+
+# build output is produced inside the image
+dist
+build
+out
+
+# vcs / tooling
+.git
+.gitignore
+.github
+.vscode
+.idea
+.DS_Store
+*.tsbuildinfo
+
+# secrets and local overrides
+.env
+.env.*
+!.env.example
+
+# docs and deployment scratch that the image does not need
+README.md
+DEPLOY.md
+docs
+legacy
+docker-compose*.yml
+*.tar
+*.tar.gz

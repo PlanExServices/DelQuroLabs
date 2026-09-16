@@ -1,0 +1,78 @@
+# DelQuro Labs — Coolify deployment (Docker Compose build pack).
+#
+# In Coolify:  + New Resource -> Public Repository
+#              Repository: https://github.com/PlanExServices/DelQuroLabs
+#              Branch: main        Build Pack: Docker Compose
+#              Docker Compose Location: /docker-compose.coolify.yml
+#
+# Then type your address in the "Domains" box for the `web` service (see
+# DEPLOY.md) and press Deploy. Coolify creates the Traefik routing itself.
+#
+# ---------------------------------------------------------------------------
+# Two deliberate omissions — please keep them omitted:
+#
+#   1. No `networks:` section. Coolify puts every service of a stack on an
+#      auto-created bridge network and attaches its proxy to it. Declaring
+#      your own network on top of that is documented as "intermittent — it may
+#      work after one deploy and break after the next".
+#
+#   2. No `traefik.*` labels and no `container_name:`. Coolify generates both
+#      from the domain you enter in the UI. Hard-coding them fights with
+#      Coolify's own routing and breaks when the container is renamed.
+# ---------------------------------------------------------------------------
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Compile-time values; changing one needs a rebuild (Coolify's
+        # Redeploy button does that). See .env.example.
+        VITE_BASE: ${VITE_BASE:-/}
+        VITE_SITE_URL: ${VITE_SITE_URL:-}
+
+    restart: unless-stopped
+
+    # Internal-only. Exposed so Coolify can detect which container port to
+    # route to; nothing is published on the server's public interface.
+    expose:
+      - "${APP_PORT:-8080}"
+
+    environment:
+      - TZ=${TZ:-UTC}
+
+    # --- hardening (same as the standalone stack) ------------------------
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx:size=32m,mode=0755
+      - /var/run:size=1m,mode=0755
+      - /var/log/nginx:size=8m,mode=0755
+      - /tmp:size=8m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      # nginx master starts as root and drops to the `nginx` user after
+      # binding; these are the capabilities that handoff requires.
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
+      - NET_BIND_SERVICE
+    # --- end hardening ---------------------------------------------------
+
+    # Coolify surfaces this in the UI; the image also declares the same check.
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

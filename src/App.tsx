@@ -7,6 +7,7 @@ import { Footer } from "./components/Footer";
 import { Hero } from "./components/Hero";
 import { Navbar } from "./components/Navbar";
 import { Pricing } from "./components/Pricing";
+import { Projects } from "./components/Projects";
 import { Showcase } from "./components/Showcase";
 import { SocialProof } from "./components/SocialProof";
 import { Testimonials } from "./components/Testimonials";
@@ -29,6 +30,7 @@ export default function App() {
         <Showcase />
         <Benefits />
         <Testimonials />
+        <Projects />
         <Pricing />
         <FAQ />
         <CTA />
