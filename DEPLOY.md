@@ -156,15 +156,17 @@ onboarding. In Coolify:
 
 ### 3.2 Connect the repository
 
-**Keys & Tokens → GitHub App** (or a deploy key) → grant access to
-`PlanExServices/DelQuroLabs`. This is what lets Coolify clone private repos and
-receive push webhooks.
+The repository is **public**, so no credentials are needed: choose
+**+ New Resource → Public Repository** and paste
+`https://github.com/PlanExServices/DelQuroLabs`.
+
+(If you later make it private, add a **GitHub App** under
+**Keys & Tokens** first, then use *Private Repository (with GitHub App)*.)
 
 ### 3.3 Create the resource
 
-1. **+ New Resource → Private Repository (with GitHub App)** → pick
-   `PlanExServices/DelQuroLabs` → branch `main`.
-2. **Build Pack → Docker Compose**.
+1. **+ New Resource → Public Repository** → paste the repository URL.
+2. **Branch:** `main`. **Build Pack:** `Docker Compose`.
 3. Set:
    - **Docker Compose Location:** `/docker-compose.coolify.yml`
    - **Base Directory:** `/`
@@ -172,32 +174,30 @@ receive push webhooks.
 
    | Key | Example | Notes |
    | --- | --- | --- |
-   | `SITE_DOMAIN` | `delqurolabs.example.com` | Drives the Traefik `Host()` rule |
    | `VITE_BASE` | `/` | Sub-path, if any |
-   | `VITE_SITE_URL` | `https://delqurolabs.example.com/` | Used by the portfolio section |
-   | `COOLIFY_ENTRYPOINT` | `https` | Traefik entrypoint Coolify configured |
-   | `COOLIFY_CERT_RESOLVER` | `letsencrypt` | Traefik cert resolver |
+   | `VITE_SITE_URL` | `https://labs.example.com/` | Used by the portfolio section |
    | `APP_PORT` | `8080` | Must match the container's listen port |
-   | `COOLIFY_CONTAINER_NAME` | *(leave empty)* | Coolify fills this in for you |
+   | `TZ` | `America/New_York` | Log timestamps |
 
-   > Coolify stores these encrypted at rest. `VITE_*` values are **build**
-   > arguments, so changing one requires a rebuild — Coolify does that
-   > automatically when you press **Redeploy**.
+   > `VITE_*` values are **build** arguments, so changing one requires a
+   > rebuild — press **Redeploy** after editing.
 
-5. **Domains → set the domain** and enable HTTPS (Coolify provisions the
-   Let's Encrypt certificate through Traefik).
-6. **Health check:** Coolify reads the image's `HEALTHCHECK`
-   (`/healthz`). Optionally also set a **Health Check Path** of `/healthz` with
-   port `8080` so Coolify can gate the rollout on it.
-7. Press **Deploy**.
+5. **Add the domain.** For a Compose resource Coolify lists a separate
+   **Domains for `<service>`** field per non-database service. Put your full URL
+   (`https://labs.example.com`) in the row for the **`web`** service and
+   **Save**. Coolify writes the Traefik routing and the Let's Encrypt
+   certificate from that one field.
+6. **Redeploy** the resource so the proxy picks up the new configuration.
+7. **Health check:** Coolify reads the image's `HEALTHCHECK` (`/healthz`).
+   Optionally also set **Health Check Path** `/healthz` on port `8080` so
+   Coolify gates the rollout on it.
 
-Two routing styles are supported — use one, not both:
-
-- **Option 1 (what this repo ships):** the Traefik labels in
-  `docker-compose.coolify.yml` do the routing. Requires `SITE_DOMAIN` to be set.
-- **Option 2 (pure UI):** delete the `labels:` block, then set the domain in
-  the Coolify UI and let Coolify generate the labels itself. Simpler if you'd
-  rather not hand-manage Traefik.
+**Why there are no `traefik.*` labels or a `networks:` section** in
+`docker-compose.coolify.yml`: Coolify attaches its proxy to the network it
+creates for the stack, and generates routing from the UI domain. Compose files
+that declare their own network are documented as *intermittent — may work after
+one deploy and break after the next*, and hard-coded labels/`container_name`
+fight with Coolify's own naming. Keep those two omissions.
 
 ### 3.4 Automatic deploys
 
@@ -301,8 +301,9 @@ network), and hidden files denied.
 | Symptom | Cause / fix |
 | --- | --- |
 | `curl /healthz` → connection refused | Container still starting, or `HOST_BIND` doesn't cover the interface you're calling. `docker compose ps` and check the port mapping. |
-| Coolify shows **Unhealthy** | The proxy can't reach `APP_PORT`. Confirm `APP_PORT=8080` matches the label `loadbalancer.server.port` and that the container is on the `coolify` network. |
-| 502 from Traefik | App container name changed, so routing broke. Leave `COOLIFY_CONTAINER_NAME` empty and let Coolify manage it. |
+| Coolify shows **Unhealthy** | The proxy can't reach `APP_PORT`. Confirm `APP_PORT=8080` and that the domain is set on the `web` service row. |
+| 502 / "no available server" from Traefik | Coolify did not detect the container port. Put it in the domain itself: `https://labs.example.com:8080`, then redeploy. |
+| Error about `container_name` / routes flip-flopping | Don't set `container_name:` or a custom `networks:` section in the Coolify compose file — Coolify manages both. |
 | Broken CSS / no images after deploy | You published under a sub-path without `VITE_BASE=/labs/`. `VITE_*` values are baked at build time — rebuild after changing them. |
 | Stale page after a deploy | Only the HTML shell is uncached by design; hard-reload (⌘⇧R). Hashed assets are immutable, which is intentional. |
 | Certificate never issues | Ports 80/443 not reachable, or DNS not resolving to the server yet. `docker logs coolify-proxy` for the ACME error. |

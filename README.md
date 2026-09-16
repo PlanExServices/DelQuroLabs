@@ -8,7 +8,8 @@ shipped as a self-hosted container (**nginx**) that runs on a private server or
 under **Coolify**. No server-side runtime, no database, no external services
 beyond Google Fonts.
 
-- Deployment guide: **[DEPLOY.md](DEPLOY.md)**
+- 👉 **Just want it live?** Follow **[MAKE-IT-LIVE.md](MAKE-IT-LIVE.md)** — ten plain-English steps, no jargon
+- Full deployment reference: **[DEPLOY.md](DEPLOY.md)**
 - Environment template: **[.env.example](.env.example)**
 
 ---
@@ -41,8 +42,9 @@ curl -f http://127.0.0.1:8080/healthz # -> ok
 ├── index.html                  # HTML shell (metadata, fonts, #root)
 ├── Dockerfile                  # 2-stage build: Vite -> nginx
 ├── docker/default.conf         # nginx server block (cache, headers, /healthz)
+├── MAKE-IT-LIVE.md             # simple step-by-step: get it online
 ├── docker-compose.yml          # private-server stack
-├── docker-compose.coolify.yml  # Coolify stack (Traefik labels, no host ports)
+├── docker-compose.coolify.yml  # Coolify stack (domain comes from Coolify's UI)
 ├── ci/
 │   └── github-workflow-publish-image.yml  # optional GHCR image build (see file header)
 ├── public/
