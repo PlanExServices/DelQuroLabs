@@ -1,0 +1,91 @@
+name: Publish container image
+#
+# HOW TO ENABLE THIS WORKFLOW
+# ---------------------------
+# It ships as a normal file (ci/github-workflow-publish-image.yml) because the
+# automation that prepared this branch is not allowed to create files under
+# .github/workflows/. To turn it on, either:
+#
+#   * GitHub web UI: Actions -> New workflow -> set up a workflow yourself,
+#     then paste this file in and name it .github/workflows/publish-image.yml
+#   * or, from a machine with a token that has `workflow` scope:
+#         mkdir -p .github/workflows
+#         git mv ci/github-workflow-publish-image.yml \
+#                .github/workflows/publish-image.yml
+#         git commit -m "ci: enable container image publishing" && git push
+#
+# Until then, Coolify builds the image itself from the repo's Dockerfile —
+# nothing else in this repository depends on this workflow.
+#
+# Builds the production image and pushes it to GitHub Container Registry.
+# This is the "prebuilt image" route: Coolify (or the private server) then
+# pulls `ghcr.io/<owner>/delqurolabs:latest` instead of compiling on the host,
+# which makes deploys seconds instead of minutes.
+#
+# If you would rather let Coolify build from source, delete this workflow —
+# Coolify's Git webhook already redeploys on every push to main.
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/delqurolabs
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        # Lets one build produce both amd64 and arm64 images (Raspberry Pi,
+        # Ampere/Hetzner ARM private servers).
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to ${{ env.REGISTRY }}
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Derive image tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=sha,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VITE_BASE=/
+            VITE_SITE_URL=https://example.com/
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: true
+          sbom: true

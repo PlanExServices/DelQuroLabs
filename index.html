@@ -1,241 +1,50 @@
-@import "tailwindcss";
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#050509" />
+    <meta name="color-scheme" content="dark" />
 
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+    <title>DelQuro Labs — Everyday apps, obsessively crafted</title>
+    <meta
+      name="description"
+      content="DelQuro Labs is an independent studio building a suite of thoughtful apps — Loom for focused mornings, Aura for restful nights, Vantage for money that finally makes sense. No ads. No tracking. No noise."
+    />
+    <!-- Add <link rel="canonical" href="https://your-domain/" /> here once the
+         private-server hostname is final (see DEPLOY.md). -->
 
-  --color-ink-950: #050509;
-  --color-ink-900: #0a0a12;
-  --color-ink-800: #12121d;
-  --color-ink-700: #1a1a28;
 
-  --color-mist-100: #f5f6fc;
-  --color-mist-200: #e3e5f0;
-  --color-mist-300: #c9cddd;
-  --color-mist-400: #a5aac2;
-  --color-mist-500: #8288a1;
-  --color-mist-600: #646a82;
+    <!-- Open Graph / social -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="DelQuro Labs" />
+    <meta property="og:title" content="DelQuro Labs — Everyday apps, obsessively crafted" />
+    <meta
+      property="og:description"
+      content="An independent studio building a suite of thoughtful apps: Loom, Aura and Vantage. No ads. No tracking. No noise."
+    />
+    <meta property="og:image" content="/images/screen-aura.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
 
-  --color-aurora-a: #6d5cff;
-  --color-aurora-b: #b15cff;
-  --color-aurora-c: #4fd8ff;
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
 
-  --animate-marquee: marquee 46s linear infinite;
-  --animate-marquee-slow: marquee 64s linear infinite;
-  --animate-marquee-rev: marquee-rev 58s linear infinite;
-  --animate-float: float 7s ease-in-out infinite;
-  --animate-float-slow: float 11s ease-in-out infinite;
-  --animate-spin-slower: spin 26s linear infinite;
-  --animate-pulse-soft: pulse-soft 5s ease-in-out infinite;
-
-  @keyframes marquee {
-    to {
-      transform: translateX(-50%);
-    }
-  }
-  @keyframes marquee-rev {
-    from {
-      transform: translateX(-50%);
-    }
-    to {
-      transform: translateX(0);
-    }
-  }
-  @keyframes float {
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-14px);
-    }
-  }
-  @keyframes pulse-soft {
-    0%,
-    100% {
-      opacity: 0.55;
-    }
-    50% {
-      opacity: 1;
-    }
-  }
-}
-
-@layer base {
-  html {
-    scroll-behavior: smooth;
-    scroll-padding-top: 96px;
-  }
-  body {
-    background-color: var(--color-ink-950);
-    color: var(--color-mist-100);
-    font-family: var(--font-sans);
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-    overflow-x: clip;
-  }
-  ::selection {
-    background: color-mix(in srgb, var(--color-aurora-a) 60%, transparent);
-    color: #fff;
-  }
-  :focus-visible {
-    outline: 2px solid var(--color-aurora-c);
-    outline-offset: 3px;
-    border-radius: 6px;
-  }
-  ::-webkit-scrollbar {
-    width: 10px;
-  }
-  ::-webkit-scrollbar-track {
-    background: var(--color-ink-950);
-  }
-  ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, #2a2a3f, #1a1a28);
-    border-radius: 8px;
-    border: 2px solid var(--color-ink-950);
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: #3a3a55;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    html {
-      scroll-behavior: auto;
-    }
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
-  }
-}
-
-/* ---------- bespoke utilities ---------- */
-
-.text-aurora {
-  background: linear-gradient(100deg, #8d7bff 0%, #c77dff 45%, #6fe1ff 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.glass {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-}
-
-.mask-x {
-  -webkit-mask-image: linear-gradient(
-    to right,
-    transparent,
-    black 12%,
-    black 88%,
-    transparent
-  );
-  mask-image: linear-gradient(
-    to right,
-    transparent,
-    black 12%,
-    black 88%,
-    transparent
-  );
-}
-
-.mask-b {
-  -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent);
-  mask-image: linear-gradient(to bottom, black 55%, transparent);
-}
-
-/* cursor spotlight on cards */
-.spotlight {
-  position: relative;
-  isolation: isolate;
-}
-.spotlight::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: radial-gradient(
-    520px circle at var(--mx, 50%) var(--my, 50%),
-    rgba(141, 123, 255, 0.13),
-    transparent 45%
-  );
-  opacity: 0;
-  transition: opacity 0.5s ease;
-  z-index: -1;
-  pointer-events: none;
-}
-.spotlight:hover::before {
-  opacity: 1;
-}
-
-/* shine sweep for primary buttons */
-.btn-shine {
-  position: relative;
-  overflow: hidden;
-}
-.btn-shine::after {
-  content: "";
-  position: absolute;
-  inset: -40% -60%;
-  background: linear-gradient(
-    105deg,
-    transparent 40%,
-    rgba(255, 255, 255, 0.35) 50%,
-    transparent 60%
-  );
-  transform: translateX(-120%);
-  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
-  pointer-events: none;
-}
-.btn-shine:hover::after {
-  transform: translateX(120%);
-}
-
-/* animated underline for nav links */
-.link-underline {
-  position: relative;
-}
-.link-underline::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: -4px;
-  height: 1.5px;
-  width: 100%;
-  border-radius: 2px;
-  background: linear-gradient(90deg, #8d7bff, #6fe1ff);
-  transform: scaleX(0);
-  transform-origin: right;
-  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.link-underline:hover::after,
-.link-underline:focus-visible::after {
-  transform: scaleX(1);
-  transform-origin: left;
-}
-
-/* film grain */
-.noise {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
-  background-size: 240px 240px;
-}
-
-/* faint engineering grid */
-.grid-lines {
-  background-image: linear-gradient(
-      rgba(255, 255, 255, 0.035) 1px,
-      transparent 1px
-    ),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-  background-size: 76px 76px;
-}
-
-.marquee:hover .marquee-track {
-  animation-play-state: paused;
-}
+    <!-- Fonts: preconnect + single stylesheet request -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <noscript>
+      <div style="padding: 2rem; font-family: system-ui; color: #f5f6fc; background: #050509">
+        <h1>DelQuro Labs</h1>
+        <p>This experience requires JavaScript. Please enable it to continue.</p>
+      </div>
+    </noscript>
+  </body>
+</html>
